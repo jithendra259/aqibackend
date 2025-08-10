@@ -1,23 +1,29 @@
-from  app.gemini.geminiclient import get_gemini_client 
 
-def main():
-    client = get_gemini_client()
-    print("Welcome to Gemini AI Terminal Interface! Type 'exit' to quit.")
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from app.gemini.geminiclient import get_gemini_client
 
-    while True:
-        user_input = input("\nEnter your prompt: ")
-        if user_input.strip().lower() == "exit":
-            print("Exiting... Goodbye!")
-            break
+app = Flask(__name__)
+CORS(app)  # Enable CORS
 
-        try:
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=user_input
-            )
-            print("\nAI Response:\n" + response.text)
-        except Exception as e:
-            print(f"Error generating response: {e}")
+client = get_gemini_client()
+
+@app.route("/generate", methods=["POST"])
+def generate():
+    data = request.get_json()
+    user_input = data.get("prompt", "")
+
+    if not user_input:
+        return jsonify({"error": "No prompt provided"}), 400
+
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=user_input
+        )
+        return jsonify({"response": response.text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    main()
+    app.run(port=5000, debug=True)
