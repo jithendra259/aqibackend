@@ -1,5 +1,9 @@
-from google import genai
+from dotenv import load_dotenv
 import os
+from google import genai
+
+# Load environment variables from .env file
+load_dotenv()
 
 def get_gemini_client():
     api_key = os.getenv("GEMINI_API_KEY")
